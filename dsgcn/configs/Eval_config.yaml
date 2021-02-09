@@ -1,0 +1,73 @@
+model1:
+    type: Conv3d
+    kwargs:
+        feature_dim_app: 2053
+        max_len: 40
+        dropout: 0.5
+model2:
+    type: dsgcn
+    kwargs:
+        feature_dim: 2053
+        featureless: False
+        reduce_method: max
+        hidden_dims: [512, 512, 512, 64]
+        freeze_bn: False
+        dropout: 0.5
+model3:
+    type: histgram_std
+    kwargs:
+        feature_dim: 2053
+        hidden_dims: [512, 512, 512]
+        loss_type: 'BCE'
+        freeze_bn: False
+        dropout: 0.5
+
+
+distributed: False 
+gpus: 1
+workers_per_gpu: 8
+batch_size_per_gpu: 1024
+iter_size: 1
+
+total_epochs: 160
+
+optimizer:
+    type: Adam
+    lr: 0.001
+    betas: [0.9, 0.999]
+    eps: 0.00000001
+    weight_decay: 0.0001
+    #momentum: 0.9
+    #weight_decay: 0.0001
+
+optimizer_config:
+
+lr_config:
+    policy: 'step'
+    step: [30, 60]
+
+checkpoint_config:
+    interval: 1
+
+log_level: 'INFO'
+log_config:
+    # the actual interval is the LCM of `iter_size` and `interval`
+    interval: 50
+    hooks:
+        - type: 'TextLoggerHook'
+
+workflow:
+    # - !!python/tuple ['train_iter_size', 1]
+    - !!python/tuple ['train', 1]
+
+workflow2:
+    # - !!python/tuple ['train_iter_size', 1]
+    - !!python/tuple ['val', 1]
+
+train_data:
+    proposal_path:
+        - /ssd/pdai/MOT_research/LPC_MOT/dataset/MOT17_old/results_reid_with_traindata/lpc_traindata/
+
+test_data:
+    proposal_path:
+        - /ssd/pdai/MOT_research/LPC_MOT/dataset/MOT17_old/results_reid_with_traindata/lpc_testdata/
