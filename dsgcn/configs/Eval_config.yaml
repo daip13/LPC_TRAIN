@@ -26,7 +26,7 @@ model3:
 distributed: False 
 gpus: 1
 workers_per_gpu: 8
-batch_size_per_gpu: 1024
+batch_size_per_gpu: 4096
 iter_size: 1
 
 total_epochs: 160
@@ -66,8 +66,8 @@ workflow2:
 
 train_data:
     proposal_path:
-        - /ssd/pdai/MOT_research/LPC_MOT/dataset/MOT17_old/results_reid_with_traindata/lpc_traindata/
+        - /ssd/pdai/MOT_research/LPC_MOT/dataset/MOT17/results_reid_with_traindata/lpc_traindata/
 
 test_data:
     proposal_path:
-        - /ssd/pdai/MOT_research/LPC_MOT/dataset/MOT17_old/results_reid_with_traindata/lpc_testdata/
+        - /ssd/pdai/MOT_research/LPC_MOT/dataset/MOT17/results_reid_with_traindata/lpc_testdata/

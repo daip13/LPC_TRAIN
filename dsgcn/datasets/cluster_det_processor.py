@@ -23,7 +23,7 @@ class ClusterDetProcessor_mall(object):
         assert reid_features.shape[1] == 2048
         reid_features_node = l2norm(reid_features)
         spatem_features = np.array(fn_node_info["spatem_features"])
-        spatem_features_node = l2norm(spatem_features)
+        spatem_features_node = spatem_features
         # add the temporal spatial information into the feature vectors
         features_node = np.concatenate((reid_features_node, spatem_features_node), axis=1)
         label_output = fn_node_info["labels"]
