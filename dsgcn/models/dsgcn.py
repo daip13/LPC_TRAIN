@@ -138,15 +138,9 @@ class GNN(nn.Module):
         x, feature = self.extract(data[0], data[1], data[2])
         y = self.softmax(x)
         y1 = y[:, 1]
-        HistgramStd.eval_batch_new(y1, data[-1], 'BCE')
+        #HistgramStd.eval_batch_new(y1, data[-1], 'BCE')
         if return_loss:
             purity_label_test = purity_label.cpu().numpy()
-            try:
-                assert sum(purity_label_test == 1) and sum(purity_label_test == 0)
-            except:
-                a = 1
-                #print('warning!!! label error {}, {} vs {}'.format(purity_label_test, sum(purity_label_test == 1), sum(purity_label_test == 0)))
-           
             loss = self.loss(x.view(len(data[-1]),-1), data[-1].long())
             return y, loss
         else:

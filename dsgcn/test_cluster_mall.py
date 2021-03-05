@@ -64,7 +64,7 @@ def test_cluster_mall(model1, cfg, logger):
     IoP_GT = np.array([iop for item in IoP_GT for iop in item])
     output_probs = torch.from_numpy(output_probs)
     IoP_GT1 = torch.from_numpy(IoP_GT)
-    HistgramStd.eval_batch_new(output_probs, IoP_GT1, 'BCE')
+    #HistgramStd.eval_batch_new(output_probs, IoP_GT1, 'BCE')
     output_probs2 = np.array(output_probs1)
     # plot roc curve
     false_positive_rate,true_positive_rate,thresholds=roc_curve(IoP_GT, output_probs2)
@@ -103,8 +103,6 @@ def test_cluster_mall(model1, cfg, logger):
         estimated_iop_dict[node_name] = estimated_iop
     with open(cfg.work_dir + '/Estimated_IoP_eval_dict.json', 'w') as f:
         json.dump(estimated_iop_dict, f)
-    #avg_loss = sum(losses) / len(losses)
-    #logger.info('[Test] Overall Loss {:.4f}'.format(avg_loss))
     with open(cfg.work_dir + '/Estimated_IoP_eval.json', 'w') as f:
         json.dump(output_probs1, f)
     with open(cfg.work_dir + '/GT_IoP_eval.json', 'w') as f:

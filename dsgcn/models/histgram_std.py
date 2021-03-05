@@ -66,9 +66,7 @@ class HistgramStd(nn.Module):
 
         self.inplanes = feature_dim + num_hist_bins
         self.layers = self._make_layer(HistgramStdBasicBlock, planes, freeze_bn, dropout)
-        #self.sigmoid = nn.Sigmoid()
         self.num_classes = num_classes
-        #self.loss = torch.nn.BCELoss()
         self.softmax = torch.nn.Softmax(dim = 1)
 
     
@@ -158,16 +156,10 @@ class HistgramStd(nn.Module):
             y1 = y[:, 1]
         else:
             y = x
-        self.eval_batch_new(y1, label, self.loss_type)
+        #self.eval_batch_new(y1, label, self.loss_type)
 
         if return_loss :
             purity_label_test = label.cpu().numpy()
-            try:
-                assert sum(purity_label_test == 1) and sum(purity_label_test == 0)
-            except:
-                a = 1
-                #print('warning!!! label error {}, {} vs {}'.format(purity_label_test, sum(purity_label_test == 1), sum(purity_label_test == 0)))
-           
             if self.loss_type != 'mse':
                 loss = self.loss(x.view(bs, -1), data[-1].long())
             else:
@@ -205,7 +197,6 @@ class HistgramStd(nn.Module):
             std_fea = np.mean(proposal_fea, 0)
             std_fea = np.sqrt(std_fea)
             batch_std_fea[idx] = std_fea
-            #batch_std_fea[idx] = np.concatenate((abs_fea, std_fea))
         return batch_std_fea
 
 

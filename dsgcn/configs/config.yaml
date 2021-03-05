@@ -26,10 +26,10 @@ model3:
 distributed: False 
 gpus: 8
 workers_per_gpu: 8
-batch_size_per_gpu: 1024
+batch_size_per_gpu: 2048
 iter_size: 1
 
-total_epochs: 5
+total_iterations: 100
 
 optimizer:
     type: Adam

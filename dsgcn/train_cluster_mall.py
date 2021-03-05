@@ -84,7 +84,7 @@ def _single_train(model, dataset1, dataset2, processor, cfg, logger):
     model = [MMDataParallel(item, device_ids=range(cfg.gpus)).cuda() for item in model]
     optimizer = [build_optimizer(item, cfg.optimizer) for item in model]
 
-    epoch_num = 0
+    iter_num = 0
     model1, model2, model3 = model[0], model[1], model[2]
     optimizer1, optimizer2, optimizer3 = optimizer[0], optimizer[1], optimizer[2]
     data_loaders2 = build_dataloader(dataset2, processor, cfg.batch_size_per_gpu, cfg.workers_per_gpu, train=False, shuffle=False)
@@ -92,11 +92,12 @@ def _single_train(model, dataset1, dataset2, processor, cfg, logger):
     lr_scheduler1 = torch.optim.lr_scheduler.StepLR(optimizer1, step_size=30)
     lr_scheduler2 = torch.optim.lr_scheduler.StepLR(optimizer2, step_size=30)
     lr_scheduler3 = torch.optim.lr_scheduler.StepLR(optimizer3, step_size=30)
-    while epoch_num < cfg.total_epochs:
+    while iter_num < cfg.total_iterations:
         lr_scheduler1.step()
         lr_scheduler2.step()
         lr_scheduler3.step()
         for i, data_batch in enumerate(data_loaders1):
+            iter_num += 1
             model1.train()
             model2.train()
             model3.train()
@@ -109,16 +110,17 @@ def _single_train(model, dataset1, dataset2, processor, cfg, logger):
             loss2 = torch.mean(loss2)
             x3, loss3 = model3(data_batch, return_loss=True)
             loss3 = torch.mean(loss3)
-            if i % cfg.log_config.interval == 0:
-                logger.info('[Epoch] {}, lr {}'.format(epoch_num, lr_scheduler1.get_lr()[0]))
-                logger.info('[Train] [Conv3d] Iter {}/{}: Loss {:.4f}'.format(i, len(data_loaders1), loss1))
-                logger.info('[Train] [dsgcn] Iter {}/{}: Loss {:.4f}'.format(i, len(data_loaders1), loss2))
-                logger.info('[Train] [histgram_std] Iter {}/{}: Loss {:.4f}'.format(i, len(data_loaders1), loss3))
-                with open(cfg.work_dir + "/cnn_model_iter_" + str(epoch_num) + "_" + str(i)  + ".pth", 'wb') as to_save1:
+            logger.info('[Iteration] {}, lr {}'.format(iter_num, lr_scheduler1.get_lr()[0]))
+            logger.info('[Train] [Conv3d] Loss {:.4f}'.format(loss1))
+            logger.info('[Train] [dsgcn] Loss {:.4f}'.format(loss2))
+            logger.info('[Train] [histgram_std] Loss {:.4f}'.format(loss3))
+
+            if iter_num % cfg.log_config.interval == 0:
+                with open(cfg.work_dir + "/cnn_model_iter_" + str(iter_num) + ".pth", 'wb') as to_save1:
                     torch.save(model1.module, to_save1)
-                with open(cfg.work_dir + "/dsgcn_model_iter_" + str(epoch_num) + "_" + str(i)  + ".pth", 'wb') as to_save2:
+                with open(cfg.work_dir + "/dsgcn_model_iter_" + str(iter_num) + ".pth", 'wb') as to_save2:
                     torch.save(model2.module, to_save2)
-                with open(cfg.work_dir + "/histstd_model_iter_" + str(epoch_num) + "_" + str(i)  + ".pth", 'wb') as to_save3:
+                with open(cfg.work_dir + "/histstd_model_iter_" + str(iter_num) + ".pth", 'wb') as to_save3:
                     torch.save(model3.module, to_save3)
     
             loss12 = F.kl_div(F.log_softmax(x1, dim=1), x2.detach(), False)/x1.shape[0]
@@ -135,24 +137,4 @@ def _single_train(model, dataset1, dataset2, processor, cfg, logger):
             loss32 = F.kl_div(F.log_softmax(x3, dim=1), x2.detach(), False)/x3.shape[0]
             loss3 = loss3 + loss32
             loss3.backward()
-            optimizer3.step()
-         
-        # save the model
-        with open(cfg.work_dir + "/cnn_model_iter_" + str(epoch_num) + ".pth", 'wb') as to_save1:
-            torch.save(model1.module, to_save1)
-        with open(cfg.work_dir + "/dsgcn_model_iter_" + str(epoch_num) +".pth", 'wb') as to_save2:
-            torch.save(model2.module, to_save2)
-        with open(cfg.work_dir + "/histstd_model_iter_" + str(epoch_num) +".pth", 'wb') as to_save3:
-            torch.save(model3.module, to_save3)
-
-        if epoch_num % 2 == 0:
-            logger.info('[Evaluation] [Epoch] {}'.format(epoch_num))
-            model1.eval()
-            model2.eval()
-            model3.eval()
-            for i, data_batch in enumerate(data_loaders2):
-                with torch.no_grad():
-                    _ = model1(data_batch, return_loss=False)
-                    _ = model2(data_batch, return_loss=False)
-                    _ = model2(data_batch, return_loss=False)
-        epoch_num += 1
+            optimizer3.step() 
