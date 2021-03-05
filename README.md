@@ -23,4 +23,4 @@ python traindata_generation.py --detection_file_path /root/LPC_train/dataset/MOT
 3. cd /root/LPC_train/ && sh main.sh
 ```
 
-Notice: the training data for MOT17 is very small, so the model is easy to be overfitting. Please choose the best trained model by evaluating its performance on the test set. 
+Notice: the training data for MOT17 is very small, so the model is easy to be overfitting. Please choose the best trained model by evaluating its performance on the test set. For MOT17, we use the model trained with 100 iterations. 
